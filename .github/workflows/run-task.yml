@@ -1,0 +1,36 @@
+name: Run Task
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"  # Every day at 00:00 UTC.
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install poetry
+        run: pipx install poetry
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'poetry'
+
+      - name: Install dependencies
+        run: poetry install --without dev
+
+      - name: Running
+        run: |
+          poetry run auto quotes
+        env:
+          GH_AUTO_PG_AIVEN_PROJECT: ${{ secrets.GH_AUTO_PG_AIVEN_PROJECT }}
+          GH_AUTO_PG_AIVEN_SERVICE: ${{ secrets.GH_AUTO_PG_AIVEN_SERVICE }}
+          GH_AUTO_PG_USER: ${{ secrets.GH_AUTO_PG_USER }}
+          GH_AUTO_PG_PASSWORD: ${{ secrets.GH_AUTO_PG_PASSWORD }}
+          GH_AUTO_PG_DATABASE: ${{ secrets.GH_AUTO_PG_DATABASE}}
+          GH_AUTO_PG_PORT: ${{ secrets.GH_AUTO_PG_PORT}}
