@@ -4,7 +4,7 @@ import typer
 import asyncpg
 import asyncio
 
-from gh_automation_base.config import Config
+from gh_automation_funda.config import Config
 
 app = typer.Typer()
 
@@ -36,7 +36,7 @@ def dsn() -> None:
 @app.command()
 def init() -> None:
     """Initialize a new project"""
-    from gh_automation_base.persistence.init import cmd_init
+    from gh_automation_funda.persistence.init import cmd_init
 
     config = Config()
     asyncio.run(cmd_init(config))
@@ -45,19 +45,19 @@ def init() -> None:
 @app.command()
 def clean() -> None:
     """Clean the database"""
-    from gh_automation_base.persistence.init import cmd_clean
+    from gh_automation_funda.persistence.init import cmd_clean
 
     config = Config()
     asyncio.run(cmd_clean(config))
 
 
 @app.command()
-def quotes() -> None:
-    """Run the quotes pipeline"""
-    from gh_automation_base.pipelines.quotes import cmd_quotes
+def funda() -> None:
+    """Run the funda pipeline"""
+    from gh_automation_funda.pipelines.funda import cmd_funda
 
     config = Config()
-    asyncio.run(cmd_quotes(config))
+    asyncio.run(cmd_funda(config))
 
 
 def main() -> None:

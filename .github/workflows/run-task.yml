@@ -26,7 +26,7 @@ jobs:
 
       - name: Running
         run: |
-          poetry run auto quotes
+          poetry run auto funda
         env:
           GH_AUTO_PG_AIVEN_PROJECT: ${{ secrets.GH_AUTO_PG_AIVEN_PROJECT }}
           GH_AUTO_PG_AIVEN_SERVICE: ${{ secrets.GH_AUTO_PG_AIVEN_SERVICE }}
