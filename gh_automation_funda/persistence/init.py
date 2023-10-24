@@ -6,10 +6,10 @@ from typing import cast
 import asyncpg
 from yoyo import get_backend
 from yoyo.backends import PostgresqlPsycopgBackend
-from gh_automation_base.config import Config
+from gh_automation_funda.config import Config
 from typer import echo, prompt
 
-from gh_automation_base.persistence.dsn import DSN
+from gh_automation_funda.persistence.dsn import DSN
 
 
 async def initialize_database(config: Config) -> None:

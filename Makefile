@@ -3,7 +3,7 @@ export
 
 
 SHELL := /bin/bash
-PYTHON_SOURCES = gh_automation_base/ stubs/
+PYTHON_SOURCES = gh_automation_funda/ stubs/
 DSN := postgresql+psycopg://${GH_AUTO_PG_USER}:${GH_AUTO_PG_PASSWORD}@${GH_AUTO_PG_AIVEN_SERVICE}-${GH_AUTO_PG_AIVEN_PROJECT}.aivencloud.com:${GH_AUTO_PG_PORT}/${GH_AUTO_PG_DATABASE}?sslmode=require
 
 

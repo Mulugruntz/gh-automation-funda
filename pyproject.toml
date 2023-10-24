@@ -1,11 +1,11 @@
 [tool.poetry]
-name = "gh-automation-base"
+name = "gh-automation-funda"
 version = "0.1.0"
-description = "A project base for automating Python tasks using GitHub actions and Google tools."
+description = "Funda.nl automation."
 authors = ["Samuel Giffard <samuel@giffard.co>"]
 license = "MIT"
 readme = "README.md"
-packages = [{include = "gh_automation_base"}]
+packages = [{include = "gh_automation_funda"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -17,7 +17,7 @@ asyncpg = "^0.28.0"
 httpx = "^0.24.1"
 
 [tool.poetry.scripts]
-auto = "gh_automation_base.cli:main"
+auto = "gh_automation_funda.cli:main"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.0.275"
@@ -27,6 +27,7 @@ pre-commit = "^3.3.3"
 yoyo-migrations = "^8.2.0"
 psycopg = "^3.1.10"
 asyncpg-stubs = "^0.28.0"
+psycopg-binary = "^3.1.10"
 
 [tool.ruff]
 target-version = "py311"

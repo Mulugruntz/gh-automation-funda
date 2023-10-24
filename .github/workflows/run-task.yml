@@ -26,7 +26,7 @@ jobs:
 
       - name: Running
         run: |
-          poetry run auto quotes
+          poetry run auto funda
         env:
           GH_AUTO_PG_AIVEN_PROJECT: ${{ secrets.GH_AUTO_PG_AIVEN_PROJECT }}
           GH_AUTO_PG_AIVEN_SERVICE: ${{ secrets.GH_AUTO_PG_AIVEN_SERVICE }}
@@ -34,3 +34,33 @@ jobs:
           GH_AUTO_PG_PASSWORD: ${{ secrets.GH_AUTO_PG_PASSWORD }}
           GH_AUTO_PG_DATABASE: ${{ secrets.GH_AUTO_PG_DATABASE}}
           GH_AUTO_PG_PORT: ${{ secrets.GH_AUTO_PG_PORT}}
+          ### Google Sheets.
+          # If unset in GitHub Actions, it will be ignored.
+          # Therefore, it's safe to have more than we need here.
+          GH_AUTO_GOOGLE_SHEETS_1_SHEET_ID: ${{ secrets.GH_AUTO_GOOGLE_SHEETS_1_SHEET_ID }}
+          GH_AUTO_GOOGLE_SHEETS_1_GID: ${{ secrets.GH_AUTO_GOOGLE_SHEETS_1_GID }}
+          GH_AUTO_GOOGLE_SHEETS_1_MODEL: ${{ secrets.GH_AUTO_GOOGLE_SHEETS_1_MODEL }}
+          GH_AUTO_GOOGLE_SHEETS_2_SHEET_ID: ${{ secrets.GH_AUTO_GOOGLE_SHEETS_2_SHEET_ID }}
+          GH_AUTO_GOOGLE_SHEETS_2_GID: ${{ secrets.GH_AUTO_GOOGLE_SHEETS_2_GID }}
+          GH_AUTO_GOOGLE_SHEETS_2_MODEL: ${{ secrets.GH_AUTO_GOOGLE_SHEETS_2_MODEL }}
+          GH_AUTO_GOOGLE_SHEETS_3_SHEET_ID: ${{ secrets.GH_AUTO_GOOGLE_SHEETS_3_SHEET_ID }}
+          GH_AUTO_GOOGLE_SHEETS_3_GID: ${{ secrets.GH_AUTO_GOOGLE_SHEETS_3_GID }}
+          GH_AUTO_GOOGLE_SHEETS_3_MODEL: ${{ secrets.GH_AUTO_GOOGLE_SHEETS_3_MODEL }}
+          GH_AUTO_GOOGLE_SHEETS_4_SHEET_ID: ${{ secrets.GH_AUTO_GOOGLE_SHEETS_4_SHEET_ID }}
+          GH_AUTO_GOOGLE_SHEETS_4_GID: ${{ secrets.GH_AUTO_GOOGLE_SHEETS_4_GID }}
+          GH_AUTO_GOOGLE_SHEETS_4_MODEL: ${{ secrets.GH_AUTO_GOOGLE_SHEETS_4_MODEL }}
+          GH_AUTO_GOOGLE_SHEETS_5_SHEET_ID: ${{ secrets.GH_AUTO_GOOGLE_SHEETS_5_SHEET_ID }}
+          GH_AUTO_GOOGLE_SHEETS_5_GID: ${{ secrets.GH_AUTO_GOOGLE_SHEETS_5_GID }}
+          GH_AUTO_GOOGLE_SHEETS_5_MODEL: ${{ secrets.GH_AUTO_GOOGLE_SHEETS_5_MODEL }}
+          GH_AUTO_GOOGLE_SHEETS_6_SHEET_ID: ${{ secrets.GH_AUTO_GOOGLE_SHEETS_6_SHEET_ID }}
+          GH_AUTO_GOOGLE_SHEETS_6_GID: ${{ secrets.GH_AUTO_GOOGLE_SHEETS_6_GID }}
+          GH_AUTO_GOOGLE_SHEETS_6_MODEL: ${{ secrets.GH_AUTO_GOOGLE_SHEETS_6_MODEL }}
+          GH_AUTO_GOOGLE_SHEETS_7_SHEET_ID: ${{ secrets.GH_AUTO_GOOGLE_SHEETS_7_SHEET_ID }}
+          GH_AUTO_GOOGLE_SHEETS_7_GID: ${{ secrets.GH_AUTO_GOOGLE_SHEETS_7_GID }}
+          GH_AUTO_GOOGLE_SHEETS_7_MODEL: ${{ secrets.GH_AUTO_GOOGLE_SHEETS_7_MODEL }}
+          GH_AUTO_GOOGLE_SHEETS_8_SHEET_ID: ${{ secrets.GH_AUTO_GOOGLE_SHEETS_8_SHEET_ID }}
+          GH_AUTO_GOOGLE_SHEETS_8_GID: ${{ secrets.GH_AUTO_GOOGLE_SHEETS_8_GID }}
+          GH_AUTO_GOOGLE_SHEETS_8_MODEL: ${{ secrets.GH_AUTO_GOOGLE_SHEETS_8_MODEL }}
+          GH_AUTO_GOOGLE_SHEETS_9_SHEET_ID: ${{ secrets.GH_AUTO_GOOGLE_SHEETS_9_SHEET_ID }}
+          GH_AUTO_GOOGLE_SHEETS_9_GID: ${{ secrets.GH_AUTO_GOOGLE_SHEETS_9_GID }}
+          GH_AUTO_GOOGLE_SHEETS_9_MODEL: ${{ secrets.GH_AUTO_GOOGLE_SHEETS_9_MODEL }}
