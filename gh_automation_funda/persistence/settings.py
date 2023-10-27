@@ -10,9 +10,7 @@ from pydantic import BaseModel
 ModelT = TypeVar("ModelT", bound=BaseModel)
 
 
-async def read_google_sheets(
-    sheet_id: str, gid: str, model_class: type[ModelT]
-) -> list[ModelT]:
+async def read_google_sheets(sheet_id: str, gid: str, model_class: type[ModelT]) -> list[ModelT]:
     """Read a publicly available Google Sheet and return its contents as a list of Pydantic models.
 
     Params:
@@ -41,9 +39,7 @@ async def read_google_sheets(
     row: dict[str, str]
     for row in csv_reader:
         try:
-            row_instance = model_class(
-                **{k: v for k, v in row.items() if k in model_class.__annotations__}
-            )
+            row_instance = model_class(**{k: v for k, v in row.items() if k in model_class.__annotations__})
             rows.append(row_instance)
         except Exception as e:
             print(f"Skipping row {row} due to error: {e}")

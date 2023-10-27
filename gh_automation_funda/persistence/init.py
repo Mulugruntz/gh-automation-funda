@@ -19,18 +19,12 @@ async def initialize_database(config: Config) -> None:
     try:
         await connection.execute(f"CREATE DATABASE {config.postgres.database};")
         echo(f"Created database {config.postgres.database}")
-        await connection.execute(
-            f"CREATE USER {config.postgres.user} WITH PASSWORD '{config.postgres.password}';"
-        )
+        await connection.execute(f"CREATE USER {config.postgres.user} WITH PASSWORD '{config.postgres.password}';")
         echo(f"Created user {config.postgres.user}")
         await connection.execute(
-            f"GRANT ALL PRIVILEGES ON DATABASE {config.postgres.database}"
-            f" TO {config.postgres.user};"
+            f"GRANT ALL PRIVILEGES ON DATABASE {config.postgres.database}" f" TO {config.postgres.user};"
         )
-        echo(
-            f"Granted all privileges on database {config.postgres.database} "
-            f"to user {config.postgres.user}"
-        )
+        echo(f"Granted all privileges on database {config.postgres.database} " f"to user {config.postgres.user}")
     finally:
         await connection.close()
 
@@ -44,13 +38,8 @@ async def initialize_database(config: Config) -> None:
         await connection.execute(
             f"GRANT ALL PRIVILEGES ON SCHEMA {config.postgres.db_schema} TO {config.postgres.user};"
         )
-        echo(
-            f"Granted all privileges on schema {config.postgres.db_schema}"
-            f" to user {config.postgres.user}."
-        )
-        await connection.execute(
-            f"ALTER ROLE {config.postgres.user} SET search_path TO {config.postgres.db_schema};"
-        )
+        echo(f"Granted all privileges on schema {config.postgres.db_schema}" f" to user {config.postgres.user}.")
+        await connection.execute(f"ALTER ROLE {config.postgres.user} SET search_path TO {config.postgres.db_schema};")
     finally:
         echo("Never using the super user again.")
         await connection.close()
@@ -68,9 +57,7 @@ async def check_if_database_exists(config: Config) -> bool:
     return True
 
 
-async def check_if_yoyo_tables_exist(
-    config: Config, required_tables: list[str]
-) -> bool:
+async def check_if_yoyo_tables_exist(config: Config, required_tables: list[str]) -> bool:
     """Check if the required yoyo tables exist."""
     try:
         connection = await asyncpg.connect(config.postgres.dsn)
@@ -93,20 +80,13 @@ async def cmd_init(config: Config) -> None:
         echo(f"Database {config.postgres.database} does not exist. Creating it.")
         await initialize_database(config)
 
-    if not await check_if_yoyo_tables_exist(
-        config, required_tables=[PostgresqlPsycopgBackend.lock_table]
-    ):
-        echo(
-            f"Database {config.postgres.database} does not have the required yoyo tables."
-            f" Creating them."
-        )
+    if not await check_if_yoyo_tables_exist(config, required_tables=[PostgresqlPsycopgBackend.lock_table]):
+        echo(f"Database {config.postgres.database} does not have the required yoyo tables." f" Creating them.")
         backend = cast(PostgresqlPsycopgBackend, get_backend(config.postgres.yoyo_dns))
         tables = backend.list_tables()
         echo(tables)
     else:
-        echo(
-            f"Database {config.postgres.database} has the required yoyo tables. Skipping creation."
-        )
+        echo(f"Database {config.postgres.database} has the required yoyo tables. Skipping creation.")
 
 
 async def cmd_clean(config: Config) -> None:

@@ -50,9 +50,7 @@ class GoogleSheetsConfig(BaseSettings):
                 model_class = cls.__load_model(model)
 
                 if model_class is None:
-                    print(
-                        f"Skipping Google Sheet {sheet_id} due to invalid model {model}."
-                    )
+                    print(f"Skipping Google Sheet {sheet_id} due to invalid model {model}.")
                     continue
 
                 configs.append(cls(sheet_id=sheet_id, gid=gid, model=model_class))
@@ -69,9 +67,7 @@ class GoogleSheetsConfig(BaseSettings):
             model_class = getattr(model_module, model_name)
 
             if not issubclass(model_class, BaseModel):
-                raise AttributeError(
-                    f"Model {model} is not a subclass of Pydantic's BaseModel."
-                )
+                raise AttributeError(f"Model {model} is not a subclass of Pydantic's BaseModel.")
 
         except (ImportError, AttributeError) as e:
             print(f"Cannot import model {model} due to error: {e}")
@@ -135,7 +131,9 @@ class PostgresConfig(BaseSettings):
     @property
     def dsn(self) -> str:
         """Return the DSN for the database."""
-        return f"postgresql://{self.user}:{self.password}@{self.host}:{self.port}/{self.database}?sslmode={self.sslmode}"
+        return (
+            f"postgresql://{self.user}:{self.password}@{self.host}:{self.port}/{self.database}?sslmode={self.sslmode}"
+        )
 
     @property
     def yoyo_dns(self) -> str:
@@ -148,41 +146,29 @@ class Config(BaseSettings):
 
     postgres: PostgresConfig = Field(default_factory=PostgresConfig)
     google_sheets: list[GoogleSheetsConfig] = Field(default_factory=list)
-    dynamic_settings: dict[type[BaseModel], LazyDynamicSetting] = Field(
-        default_factory=dict, init=False
-    )
-    loaded_dynamic_settings: dict[type[BaseModel], list[BaseModel]] = Field(
-        default_factory=dict, init=False
-    )
+    dynamic_settings: dict[type[BaseModel], LazyDynamicSetting] = Field(default_factory=dict, init=False)
+    loaded_dynamic_settings: dict[type[BaseModel], list[BaseModel]] = Field(default_factory=dict, init=False)
 
     @field_serializer("loaded_dynamic_settings")
     def serialize_loaded_dynamic_settings(
         self, v: dict[type[BaseModel], list[BaseModel]]
     ) -> dict[str, list[dict[str, Any]]]:
         """Serialize the loaded dynamic settings."""
-        return {
-            model.__name__: [model.model_dump(row) for row in rows]
-            for model, rows in v.items()
-        }
+        return {model.__name__: [model.model_dump(row) for row in rows] for model, rows in v.items()}
 
     @model_validator(mode="before")
     @classmethod
     def assemble_google_sheets(cls, data: Any) -> Any:
         if isinstance(data, dict):
             data["google_sheets"] = GoogleSheetsConfig.create_from_env()
-            data["dynamic_settings"] = {
-                sheet.model: LazyDynamicSetting(sheet=sheet)
-                for sheet in data["google_sheets"]
-            }
+            data["dynamic_settings"] = {sheet.model: LazyDynamicSetting(sheet=sheet) for sheet in data["google_sheets"]}
 
         return data
 
     async def get_settings_for(self, model: type[ModelT]) -> list[ModelT]:
         """Return the settings of a model."""
         if model not in self.loaded_dynamic_settings:
-            self.loaded_dynamic_settings[model] = await self.dynamic_settings[
-                model
-            ].load()
+            self.loaded_dynamic_settings[model] = await self.dynamic_settings[model].load()
         return cast(list[ModelT], self.loaded_dynamic_settings[model])
 
     async def preload_all_dynamic_settings(self) -> None:
