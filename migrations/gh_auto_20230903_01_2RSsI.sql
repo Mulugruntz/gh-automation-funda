@@ -5,7 +5,7 @@
 CREATE TYPE availability AS ENUM ('available', 'negotiated', 'sold');
 
 -- energy labels
-CREATE TYPE energy_label AS ENUM ('A+++++', 'A++++', 'A+++', 'A++', 'A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G');
+CREATE TYPE energy_label AS ENUM ('A+++++', 'A++++', 'A+++', 'A++', 'A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'UNKNOWN');
 
 CREATE TABLE IF NOT EXISTS property (
     id SERIAL PRIMARY KEY,
@@ -45,13 +45,20 @@ CREATE TABLE IF NOT EXISTS property_funda_data (
     offered_since DATE NOT NULL,
     year_built INTEGER NOT NULL CHECK (year_built > 1800 AND year_built < 2100),
     area_to_live INTEGER NOT NULL CHECK (area_to_live > 0),
-    area_of_plot INTEGER NOT NULL CHECK (area_of_plot > 0),
-    area_of_frontyard INTEGER NOT NULL CHECK (area_of_frontyard >= 0),
-    area_of_backyard INTEGER NOT NULL CHECK (area_of_backyard >= 0),
+    area_of_plot INTEGER NOT NULL CHECK (area_of_plot >= 0),
+    area_extras JSONB NOT NULL,
     volume INTEGER NOT NULL CHECK (volume > 0),
     number_of_rooms INTEGER NOT NULL CHECK (number_of_rooms > 0),
     number_of_floors INTEGER NOT NULL CHECK (number_of_floors > 0),
     energy_label energy_label NOT NULL,
+    property_type VARCHAR(255) NOT NULL,
+    has_roof_terrace BOOLEAN NOT NULL DEFAULT FALSE,
+    has_garden BOOLEAN NOT NULL DEFAULT FALSE,
+    has_balcony BOOLEAN NOT NULL DEFAULT FALSE,
+    has_solar_panels BOOLEAN NOT NULL DEFAULT FALSE,
+    has_parking_on_site BOOLEAN NOT NULL DEFAULT FALSE,
+    has_parking_on_closed_site BOOLEAN NOT NULL DEFAULT FALSE,
+    is_energy_efficient BOOLEAN NOT NULL DEFAULT FALSE,
     FOREIGN KEY (property_id) REFERENCES property(id)
 );
 
@@ -63,12 +70,19 @@ COMMENT ON COLUMN property_funda_data.offered_since IS 'The date the property wa
 COMMENT ON COLUMN property_funda_data.year_built IS 'The year the property was built.';
 COMMENT ON COLUMN property_funda_data.area_to_live IS 'The living area of the property, in m2.';
 COMMENT ON COLUMN property_funda_data.area_of_plot IS 'The area of the plot of the property, in m2.';
-COMMENT ON COLUMN property_funda_data.area_of_frontyard IS 'The area of the frontyard of the property.';
-COMMENT ON COLUMN property_funda_data.area_of_backyard IS 'The area of the backyard of the property.';
+COMMENT ON COLUMN property_funda_data.area_extras IS 'The extra areas of the property, in m2.';
 COMMENT ON COLUMN property_funda_data.volume IS 'The volume of the property, in m3.';
 COMMENT ON COLUMN property_funda_data.number_of_rooms IS 'The number of rooms of the property.';
 COMMENT ON COLUMN property_funda_data.number_of_floors IS 'The number of floors of the property.';
 COMMENT ON COLUMN property_funda_data.energy_label IS 'The energy label of the property.';
+COMMENT ON COLUMN property_funda_data.property_type IS 'The type of the property.';
+COMMENT ON COLUMN property_funda_data.has_roof_terrace IS 'Whether the property has a roof terrace.';
+COMMENT ON COLUMN property_funda_data.has_garden IS 'Whether the property has a garden.';
+COMMENT ON COLUMN property_funda_data.has_balcony IS 'Whether the property has a balcony.';
+COMMENT ON COLUMN property_funda_data.has_solar_panels IS 'Whether the property has solar panels.';
+COMMENT ON COLUMN property_funda_data.has_parking_on_site IS 'Whether the property has parking on site.';
+COMMENT ON COLUMN property_funda_data.has_parking_on_closed_site IS 'Whether the property has parking on a closed site.';
+COMMENT ON COLUMN property_funda_data.is_energy_efficient IS 'Whether the property is energy efficient.';
 
 
 CREATE TABLE IF NOT EXISTS property_funda_image (
