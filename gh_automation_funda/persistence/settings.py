@@ -1,11 +1,12 @@
 """Dynamic settings for the application."""
 
 import csv
+import json
 from io import StringIO
-from typing import TypeVar
+from typing import Annotated, TypeVar
 
 import httpx
-from pydantic import BaseModel
+from pydantic import BaseModel, BeforeValidator
 
 ModelT = TypeVar("ModelT", bound=BaseModel)
 
@@ -52,3 +53,13 @@ class MyRow(BaseModel):
     id: int
     quote: str
     author: str
+
+
+class FundaSetting(BaseModel):
+    """A Funda setting."""
+
+    area: Annotated[list[str], BeforeValidator(json.loads), str]
+    object_type: Annotated[list[str], BeforeValidator(json.loads), str]
+    price_min: int
+    price_max: int
+    days_old: int

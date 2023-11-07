@@ -147,7 +147,6 @@ class PropertyCadastralWOZ(BaseModel):
 
     id: int | None = Field(None, description="The ID of the WOZ data.")
     year: int = Field(..., gt=1800, lt=2100, description="The year the WOZ value was calculated.")
-    effective_date: date = Field(..., description="The effective date of the WOZ value.")
     reference_date: date = Field(..., description="The reference date of the WOZ value.")
     value: Decimal = Field(..., gt=0, description="The WOZ value of the property.")
 

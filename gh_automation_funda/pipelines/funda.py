@@ -8,4 +8,5 @@ async def cmd_funda(config: Config) -> None:
     """
     For now, do nothing.
     """
-    typer.echo("Pipeline: funda")
+    funda_logic = Funda(config=config)
+    await funda_logic.get_new_properties()

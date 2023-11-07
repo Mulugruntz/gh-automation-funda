@@ -119,13 +119,11 @@ CREATE TABLE IF NOT EXISTS property_cadastral_woz (
     id SERIAL PRIMARY KEY,
     property_cadastral_id INTEGER NOT NULL,
     year INTEGER NOT NULL CHECK (year > 1800 AND year < 2100),
-    effective_date DATE NOT NULL,
     reference_date DATE NOT NULL,
     value DECIMAL(10,2) NOT NULL CHECK (value > 0),
     FOREIGN KEY (property_cadastral_id) REFERENCES property_cadastral_data(id)
 );
 
 COMMENT ON COLUMN property_cadastral_woz.year IS 'The year the WOZ value was calculated.';
-COMMENT ON COLUMN property_cadastral_woz.effective_date IS 'The effective date of the WOZ value.';
 COMMENT ON COLUMN property_cadastral_woz.reference_date IS 'The reference date of the WOZ value.';
 COMMENT ON COLUMN property_cadastral_woz.value IS 'The WOZ value of the property.';

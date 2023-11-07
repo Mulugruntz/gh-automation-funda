@@ -72,24 +72,28 @@ class PropertyFromFundaData(TypedDict):
     funda_images: dict[str, str]
 
 
-def extract_in_between(text: str, start_tag: str, end_tag: str) -> str:
+def _extract_in_between(text: str, start_tag: str, end_tag: str) -> str:
     """Extract the text between two tags."""
     idx_start = text.find(start_tag)
     idx_end = text[idx_start:].find(end_tag) + idx_start
     return text[idx_start + len(start_tag) : idx_end]
 
 
-async def get_new_properties_url(*, area: list[str], price_min: int, price_max: int, days_old: int = 3) -> list[str]:
+async def get_new_properties_url(
+    *, area: list[str], price_min: int, price_max: int, days_old: int = 3, object_type: list[str]
+) -> list[str]:
     """Get the new properties from Funda.nl.
 
     Example:
         https://www.funda.nl/zoeken/koop?selected_area=%5B%22almere%22%5D&price=%22300000-500000%22&publication_date=%223%22
     """
-    areas = ",".join(f'"{a}"' for a in area)
+    areas = ",".join(f'"{a.lower()}"' for a in area)
+    object_types = ",".join(f'"{o.lower()}"' for o in object_type)
     params = {
         "selected_area": f"[{areas}]",
         "price": f'"{price_min}-{price_max}"',
         "publication_date": f'"{days_old}"',
+        "object_type": f"[{object_types}]",
     }
 
     async with AsyncClient() as client:
@@ -133,12 +137,16 @@ async def get_property_data(url: str) -> PropertyFromFundaData | None:
 
     soup = BeautifulSoup(response.text, "html.parser")
 
-    data = _extract_hidden_script_data(soup)
-    data2 = _extract_advert_data(soup)
-    data_geo = _extract_geo_data(soup)
-    data_areas_vol = _extract_areas_and_volume(soup)
-    image_urls = _extract_image_urls(soup)
-    number_of_floors = _extract_number_of_floors(soup)
+    try:
+        data = _extract_hidden_script_data(soup)
+        data2 = _extract_advert_data(soup)
+        data_geo = _extract_geo_data(soup)
+        data_areas_vol = _extract_areas_and_volume(soup)
+        image_urls = _extract_image_urls(soup)
+        number_of_floors = _extract_number_of_floors(soup)
+    except Exception as e:
+        e.add_note(f"Error while reading {url}")
+        raise e
 
     return {
         "url": str(response.url),
@@ -197,11 +205,16 @@ def _extract_advert_data(soup: BeautifulSoup) -> dict[str, Any]:
 
 def _extract_hidden_script_data(soup: BeautifulSoup) -> dict[str, Any]:
     script_gtm = soup.find("script", attrs={"data-test-gtm-script": True})
-    payload = extract_in_between(script_gtm.text, "gtmDataLayer.push(", ");")  # type: ignore
+    payload = _extract_in_between(script_gtm.text, "gtmDataLayer.push(", ");")  # type: ignore
     data = ast.literal_eval(payload)
+    offered_since = (
+        date.today()
+        if data["aangebodensinds"] == "Vandaag"
+        else datetime.strptime(data["aangebodensinds"], "%d %B %Y").date()
+    )
     return {
         "asking_price": Decimal(data["koopprijs"]),
-        "offered_since": datetime.strptime(data["aangebodensinds"], "%d %B %Y").date(),
+        "offered_since": offered_since,
         "city": data["plaats"].capitalize(),
         "postal_code": data["postcode"],
     }
@@ -264,7 +277,7 @@ def _extract_areas_and_volume(soup: BeautifulSoup) -> dict[str, Any]:
 
 async def main() -> None:
     """Main entry point."""
-    urls = await get_new_properties_url(area=["almere"], price_min=300_000, price_max=500_000)
+    urls = await get_new_properties_url(area=["almere"], price_min=300_000, price_max=500_000, object_type=["house"])
     print(urls)
     for url in urls:
         try:
