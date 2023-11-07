@@ -1,8 +1,9 @@
 """Console script for GitHub Automation Base."""
 
-import typer
-import asyncpg
 import asyncio
+
+import asyncpg
+import typer
 
 from gh_automation_funda.config import Config
 

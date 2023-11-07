@@ -1,17 +1,17 @@
 """Configuration for the application."""
 import asyncio
 import os
-from typing import Literal, Self, Any, cast, Annotated, TypeVar
 from importlib import import_module
+from typing import Annotated, Any, Literal, Self, TypeVar, cast
 
+from dotenv import load_dotenv
 from pydantic import (
-    Field,
-    model_validator,
     BaseModel,
+    Field,
     PlainSerializer,
     field_serializer,
+    model_validator,
 )
-from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
 
 from gh_automation_funda.persistence.settings import read_google_sheets

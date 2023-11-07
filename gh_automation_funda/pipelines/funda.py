@@ -1,6 +1,7 @@
 """An ETL pipeline for Funda.nl data."""
+
 from gh_automation_funda.config import Config
-import typer
+from gh_automation_funda.libs.logic.funda import Funda
 
 
 async def cmd_funda(config: Config) -> None:

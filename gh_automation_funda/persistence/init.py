@@ -4,11 +4,11 @@ import asyncio
 from typing import cast
 
 import asyncpg
+from typer import echo, prompt
 from yoyo import get_backend
 from yoyo.backends import PostgresqlPsycopgBackend
-from gh_automation_funda.config import Config
-from typer import echo, prompt
 
+from gh_automation_funda.config import Config
 from gh_automation_funda.persistence.dsn import DSN
 
 

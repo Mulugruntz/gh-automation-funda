@@ -1,13 +1,12 @@
 """This module contains the models used for the funda pipeline."""
 
-from enum import Enum
-from typing import TypeAlias, Final, Mapping, Sequence
-
-from pydantic import BaseModel, Field
+import warnings
 from datetime import date, datetime
 from decimal import Decimal
-import warnings
+from enum import Enum
+from typing import Final, Mapping, Sequence, TypeAlias
 
+from pydantic import BaseModel, Field
 
 JSON: TypeAlias = dict[str, "JSON"] | list["JSON"] | str | int | float | bool | None
 JSON_ro: TypeAlias = Mapping[str, "JSON_ro"] | Sequence["JSON_ro"] | str | int | float | bool | None

@@ -1,16 +1,16 @@
 """Scrapers for Funda.nl."""
 
 import ast
+import asyncio
+import json
 import re
 import warnings
-from datetime import datetime, date
+from datetime import date, datetime
 from decimal import Decimal
-from typing import Final, Any, TypedDict
+from typing import Any, Final, TypedDict
 
-from httpx import AsyncClient
-import json
-import asyncio
 from bs4 import BeautifulSoup
+from httpx import AsyncClient
 
 from gh_automation_funda.libs.models import (
     Availability,

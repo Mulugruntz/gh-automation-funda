@@ -1,5 +1,5 @@
 from contextlib import contextmanager
-from typing import Any, TypeAlias, Self, Mapping, Literal, Iterator
+from typing import Any, Iterator, Literal, Mapping, Self, TypeAlias
 
 Driver: TypeAlias = Any
 Connection: TypeAlias = Any
