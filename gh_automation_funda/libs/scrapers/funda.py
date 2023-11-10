@@ -7,6 +7,7 @@ import re
 import warnings
 from datetime import date, datetime
 from decimal import Decimal
+from html import unescape
 from typing import Any, Final, TypedDict
 
 from bs4 import BeautifulSoup
@@ -144,9 +145,17 @@ async def get_property_data(url: str) -> PropertyFromFundaData | None:
         data_areas_vol = _extract_areas_and_volume(soup)
         image_urls = _extract_image_urls(soup)
         number_of_floors = _extract_number_of_floors(soup)
+        energy_label = _extract_energy_label(soup)
     except Exception as e:
         e.add_note(f"Error while reading {url}")
         raise e
+
+    if energy_label is not data2["energy_label"]:
+        # Known mismatch: A+ to A5+ are all seen as A in the advert data.
+        if data2["energy_label"] is EnergyLabel.A and "+" in energy_label.value:
+            pass
+        else:
+            warnings.warn(f"Energy label mismatch: {energy_label} vs {data2['energy_label']}", UserWarning)
 
     return {
         "url": str(response.url),
@@ -161,7 +170,7 @@ async def get_property_data(url: str) -> PropertyFromFundaData | None:
         "volume": data_areas_vol["volume"],
         "number_of_rooms": data2["number_of_rooms"],
         "number_of_floors": number_of_floors,
-        "energy_label": data2["energy_label"],
+        "energy_label": energy_label,
         "property_type": data2["property_type"],
         "has_roof_terrace": data2["has_roof_terrace"],
         "has_garden": data2["has_garden"],
@@ -215,7 +224,7 @@ def _extract_hidden_script_data(soup: BeautifulSoup) -> dict[str, Any]:
     return {
         "asking_price": Decimal(data["koopprijs"]),
         "offered_since": offered_since,
-        "city": data["plaats"].capitalize(),
+        "city": unescape(data["plaats"]).capitalize(),
         "postal_code": data["postcode"],
     }
 
@@ -255,7 +264,7 @@ def _extract_geo_data(soup: BeautifulSoup) -> dict[str, Any]:
     script_object_map_config = soup.find("script", attrs={"type": "application/json", "data-object-map-config": True})
     data = json.loads(script_object_map_config.text)  # type: ignore
     return {
-        "name": data["markerTitle"],
+        "name": unescape(data["markerTitle"]),
         "latitude": data["lat"],
         "longitude": data["lng"],
     }
@@ -273,6 +282,20 @@ def _extract_areas_and_volume(soup: BeautifulSoup) -> dict[str, Any]:
         "area_extras": get_clean_area_extras(data),
         "volume": int(data["Inhoud"].removesuffix(" m³")),
     }
+
+
+def _extract_energy_label(soup: BeautifulSoup) -> EnergyLabel:
+    energy_label_tag = soup.find("span", class_="energielabel")
+    if not energy_label_tag:
+        return EnergyLabel.UNKNOWN
+
+    text = energy_label_tag.text.strip()
+    try:
+        return EnergyLabel(text)
+    except ValueError:
+        warnings.warn(f"Unknown energy label: {text}", UserWarning)
+
+    return EnergyLabel.UNKNOWN
 
 
 async def main() -> None:

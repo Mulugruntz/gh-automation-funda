@@ -6,6 +6,7 @@ from gh_automation_funda.libs.models import (
     Property,
     PropertyCadastralData,
     PropertyCadastralWOZ,
+    PropertyCadastralWOZItem,
     PropertyFundaData,
     PropertyFundaImage,
 )
@@ -62,10 +63,7 @@ class Funda:
             postal_code=data_funda["postal_code"],
             city=data_funda["city"],
         )
-        if not cadaster_url:
-            return None
-
-        cadaster_data = await get_property_cadaster_data(cadaster_url)
+        cadaster_data = await get_property_cadaster_data(cadaster_url) if cadaster_url else None
 
         woz_data = await get_property_woz_data(
             street_and_house_number=data_funda["name"],
@@ -78,10 +76,20 @@ class Funda:
     @staticmethod
     def _assemble_property_data(
         data_funda: PropertyFromFundaData,
-        data_cadaster: dict[str, Any],
+        data_cadaster: dict[str, Any] | None,
         data_woz: dict[str, Any],
     ) -> Property:
         """Assemble the data for a property."""
+        cadastral_data = None
+        if data_cadaster:
+            cadastral_data = PropertyCadastralData(
+                cadastral_url=data_cadaster["cadastral_url"],
+                woz_url=data_woz["woz_url"],
+                value_min=data_cadaster["value_min"],
+                value_max=data_cadaster["value_max"],
+                value_calculated_on=data_cadaster["value_calculated_on"],
+            )
+
         return Property(
             name=data_funda["name"],
             address=data_funda["address"],
@@ -115,26 +123,28 @@ class Funda:
             funda_images=[
                 PropertyFundaImage(name=name, image_url=url) for name, url in data_funda["funda_images"].items()
             ],
-            cadastral_data=PropertyCadastralData(
-                cadastral_url=data_cadaster["cadastral_url"],
+            cadastral_data=cadastral_data,
+            cadastral_woz=PropertyCadastralWOZ(
                 woz_url=data_woz["woz_url"],
-                value_min=data_cadaster["value_min"],
-                value_max=data_cadaster["value_max"],
-                value_calculated_on=data_cadaster["value_calculated_on"],
+                woz_data=[
+                    PropertyCadastralWOZItem(
+                        year=woz_line["year"],
+                        reference_date=woz_line["reference_date"],
+                        value=woz_line["value"],
+                    )
+                    for woz_line in data_woz["woz_data"]
+                ],
             ),
-            cadastral_woz=[
-                PropertyCadastralWOZ(
-                    year=woz_line["year"],
-                    reference_date=woz_line["reference_date"],
-                    value=woz_line["value"],
-                )
-                for woz_line in data_woz["woz_data"]
-            ],
         )
 
     def _save_property_data(self, property_data: Property) -> None:
         """Save the property data."""
         print("Saving property data:")
-        print(property_data.model_dump_json(indent=2))
+        # print(property_data.model_dump_json(indent=2))
+        print(property_data.address)
+        print(property_data.funda_data.url)
+        if property_data.cadastral_data is not None:
+            print(property_data.cadastral_data.cadastral_url)
+        print(property_data.cadastral_woz.woz_url)
         print("Done saving property data.")
         print()

@@ -142,13 +142,21 @@ class PropertyCadastralData(BaseModel):
     value_calculated_on: date = Field(..., description="The date the value was calculated.")
 
 
-class PropertyCadastralWOZ(BaseModel):
-    """The WOZ data for a property."""
+class PropertyCadastralWOZItem(BaseModel):
+    """The WOZ data for a property for a specific year."""
 
     id: int | None = Field(None, description="The ID of the WOZ data.")
     year: int = Field(..., gt=1800, lt=2100, description="The year the WOZ value was calculated.")
     reference_date: date = Field(..., description="The reference date of the WOZ value.")
     value: Decimal = Field(..., gt=0, description="The WOZ value of the property.")
+
+
+class PropertyCadastralWOZ(BaseModel):
+    """The WOZ data for a property."""
+
+    id: int | None = Field(None, description="The ID of the WOZ data.")
+    woz_url: str = Field(..., max_length=1023, description="The WOZ URL of the property.")
+    woz_data: list[PropertyCadastralWOZItem] = Field(..., description="The WOZ data of the property.")
 
 
 class Property(BaseModel):
@@ -165,5 +173,10 @@ class Property(BaseModel):
     updated_at: datetime = Field(default_factory=datetime.now, description="The last update date of the property.")
     funda_data: PropertyFundaData = Field(..., description="The Funda.nl data of the property.")
     funda_images: list[PropertyFundaImage] = Field(..., description="The Funda.nl images of the property.")
-    cadastral_data: PropertyCadastralData = Field(..., description="The cadastral data of the property.")
-    cadastral_woz: list[PropertyCadastralWOZ] = Field(..., description="The WOZ data of the property.")
+    cadastral_data: PropertyCadastralData | None = Field(
+        ...,
+        description=(
+            "The cadastral data of the property. Can be NULL if there is no cadastral data (e.g. for new buildings)."
+        ),
+    )
+    cadastral_woz: PropertyCadastralWOZ = Field(..., description="The WOZ data of the property.")

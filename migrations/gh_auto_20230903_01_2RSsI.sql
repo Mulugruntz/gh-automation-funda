@@ -18,9 +18,11 @@ CREATE TABLE IF NOT EXISTS property (
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     funda_data_id INTEGER UNIQUE NOT NULL,
-    cadastral_data_id INTEGER UNIQUE NOT NULL,
+    cadastral_data_id INTEGER UNIQUE,
+    cadastral_woz_id INTEGER UNIQUE,
     FOREIGN KEY (funda_data_id) REFERENCES property_funda_data(id),
-    FOREIGN KEY (cadastral_data_id) REFERENCES property_cadastral_data(id)
+    FOREIGN KEY (cadastral_data_id) REFERENCES property_cadastral_data(id),
+    FOREIGN KEY (cadastral_woz_id) REFERENCES property_cadastral_woz(id)
 );
 
 COMMENT ON COLUMN property.name IS 'The name of the property.';
@@ -32,7 +34,7 @@ COMMENT ON COLUMN property.longitude IS 'The longitude of the property.';
 COMMENT ON COLUMN property.created_at IS 'The creation date of the property.';
 COMMENT ON COLUMN property.updated_at IS 'The last update date of the property.';
 COMMENT ON COLUMN property.funda_data_id IS 'The ID of the Funda.nl data of the property.';
-COMMENT ON COLUMN property.cadastral_data_id IS 'The ID of the cadastral data of the property.';
+COMMENT ON COLUMN property.cadastral_data_id IS 'The ID of the cadastral data of the property. Can be NULL if there is no cadastral data (e.g. for new buildings).';
 
 
 CREATE TABLE IF NOT EXISTS property_funda_data (
@@ -101,7 +103,6 @@ CREATE TABLE IF NOT EXISTS property_cadastral_data (
     id SERIAL PRIMARY KEY,
     property_id INTEGER NOT NULL,
     cadastral_url VARCHAR(1023) UNIQUE NOT NULL,
-    woz_url VARCHAR(1023) UNIQUE NOT NULL,
     value_min DECIMAL(10,2) NOT NULL CHECK (value_min > 0),
     value_max DECIMAL(10,2) NOT NULL CHECK (value_max > 0),
     value_calculated_on DATE NOT NULL,
@@ -109,7 +110,6 @@ CREATE TABLE IF NOT EXISTS property_cadastral_data (
 );
 
 COMMENT ON COLUMN property_cadastral_data.cadastral_url IS 'The kadasterdata.nl URL of the property.';
-COMMENT ON COLUMN property_cadastral_data.woz_url IS 'The WOZ URL of the property.';
 COMMENT ON COLUMN property_cadastral_data.value_min IS 'The minimum value of the property.';
 COMMENT ON COLUMN property_cadastral_data.value_max IS 'The maximum value of the property.';
 COMMENT ON COLUMN property_cadastral_data.value_calculated_on IS 'The date the value was calculated.';
@@ -117,13 +117,22 @@ COMMENT ON COLUMN property_cadastral_data.value_calculated_on IS 'The date the v
 
 CREATE TABLE IF NOT EXISTS property_cadastral_woz (
     id SERIAL PRIMARY KEY,
-    property_cadastral_id INTEGER NOT NULL,
+    property_id INTEGER UNIQUE NOT NULL,
+    woz_url VARCHAR(1023) UNIQUE NOT NULL,
+    FOREIGN KEY (property_id) REFERENCES property(id)
+);
+
+COMMENT ON COLUMN property_cadastral_woz.woz_url IS 'The WOZ URL of the property.';
+
+CREATE TABLE IF NOT EXISTS property_cadastral_woz_item (
+    id SERIAL PRIMARY KEY,
+    property_cadastral_woz_id INTEGER NOT NULL,
     year INTEGER NOT NULL CHECK (year > 1800 AND year < 2100),
     reference_date DATE NOT NULL,
     value DECIMAL(10,2) NOT NULL CHECK (value > 0),
-    FOREIGN KEY (property_cadastral_id) REFERENCES property_cadastral_data(id)
+    FOREIGN KEY (property_cadastral_woz_id) REFERENCES property_cadastral_woz(id)
 );
 
-COMMENT ON COLUMN property_cadastral_woz.year IS 'The year the WOZ value was calculated.';
-COMMENT ON COLUMN property_cadastral_woz.reference_date IS 'The reference date of the WOZ value.';
-COMMENT ON COLUMN property_cadastral_woz.value IS 'The WOZ value of the property.';
+COMMENT ON COLUMN property_cadastral_woz_item.year IS 'The year the WOZ value was calculated.';
+COMMENT ON COLUMN property_cadastral_woz_item.reference_date IS 'The reference date of the WOZ value.';
+COMMENT ON COLUMN property_cadastral_woz_item.value IS 'The WOZ value of the property.';
