@@ -136,9 +136,9 @@ class PropertyCadastralData(BaseModel):
 
     id: int | None = Field(None, description="The ID of the cadastral data.")
     cadastral_url: str = Field(..., max_length=1023, description="The kadasterdata.nl URL of the property.")
-    value_min: Decimal = Field(..., gt=0, description="The minimum value of the property.")
-    value_max: Decimal = Field(..., gt=0, description="The maximum value of the property.")
-    value_calculated_on: date = Field(..., description="The date the value was calculated.")
+    value_min: Decimal | None = Field(..., gt=0, description="The minimum value of the property.")
+    value_max: Decimal | None = Field(..., gt=0, description="The maximum value of the property.")
+    value_calculated_on: date | None = Field(..., description="The date the value was calculated.")
 
 
 class PropertyCadastralWOZItem(BaseModel):
