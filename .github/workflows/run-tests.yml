@@ -1,0 +1,32 @@
+name: Run Tests
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main  # Runs on pull request changes targeting the main branch.
+  push:
+    branches:
+      - main  # Runs on pushes to the main branch.
+
+jobs:
+  build-and-lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install poetry
+        run: pipx install poetry
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'poetry'
+
+      - name: Install dependencies
+        run: poetry install --with dev
+
+      - name: Lint Check
+        run: make format-check
