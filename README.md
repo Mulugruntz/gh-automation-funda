@@ -1,5 +1,5 @@
 # gh-automation-funda
-![GH_Automation_:: version](https://img.shields.io/badge/version-0.1.0-blue)
+![GH_Automation_:: version](https://img.shields.io/badge/version-0.2.0-blue)
 
 [![License MIT](https://img.shields.io/badge/License-MIT-green)](./LICENSE)
 [![Python 3.11](https://img.shields.io/badge/Python-3.11-blue)](https://www.python.org/downloads/release/python-380/)
