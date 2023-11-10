@@ -42,6 +42,9 @@ class Funda:
             )
             urls.update(batch_urls)
 
+        print(f"Found {len(urls)} new properties.")
+        print(" - " + "\n - ".join(urls))
+
         for url in urls:
             property_data = await self.get_property_all_data(url)
             if property_data is None:
