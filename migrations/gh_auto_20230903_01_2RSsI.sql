@@ -19,10 +19,7 @@ CREATE TABLE IF NOT EXISTS property (
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     funda_data_id INTEGER UNIQUE NOT NULL,
     cadastral_data_id INTEGER UNIQUE,
-    cadastral_woz_id INTEGER UNIQUE,
-    FOREIGN KEY (funda_data_id) REFERENCES property_funda_data(id),
-    FOREIGN KEY (cadastral_data_id) REFERENCES property_cadastral_data(id),
-    FOREIGN KEY (cadastral_woz_id) REFERENCES property_cadastral_woz(id)
+    cadastral_woz_id INTEGER UNIQUE
 );
 
 COMMENT ON COLUMN property.name IS 'The name of the property.';
@@ -60,8 +57,7 @@ CREATE TABLE IF NOT EXISTS property_funda_data (
     has_solar_panels BOOLEAN NOT NULL DEFAULT FALSE,
     has_parking_on_site BOOLEAN NOT NULL DEFAULT FALSE,
     has_parking_on_closed_site BOOLEAN NOT NULL DEFAULT FALSE,
-    is_energy_efficient BOOLEAN NOT NULL DEFAULT FALSE,
-    FOREIGN KEY (property_id) REFERENCES property(id)
+    is_energy_efficient BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 COMMENT ON COLUMN property_funda_data.url IS 'The Funda.nl URL of the property.';
@@ -91,8 +87,7 @@ CREATE TABLE IF NOT EXISTS property_funda_image (
     id SERIAL PRIMARY KEY,
     funda_data_id INTEGER NOT NULL,
     name VARCHAR(255) NOT NULL,
-    image_url VARCHAR(1023) UNIQUE NOT NULL,
-    FOREIGN KEY (funda_data_id) REFERENCES property_funda_data(id)
+    image_url VARCHAR(1023) UNIQUE NOT NULL
 );
 
 COMMENT ON COLUMN property_funda_image.name IS 'The name of the image.';
@@ -105,8 +100,7 @@ CREATE TABLE IF NOT EXISTS property_cadastral_data (
     cadastral_url VARCHAR(1023) UNIQUE NOT NULL,
     value_min DECIMAL(10,2) NOT NULL CHECK (value_min > 0),
     value_max DECIMAL(10,2) NOT NULL CHECK (value_max > 0),
-    value_calculated_on DATE NOT NULL,
-    FOREIGN KEY (property_id) REFERENCES property(id)
+    value_calculated_on DATE NOT NULL
 );
 
 COMMENT ON COLUMN property_cadastral_data.cadastral_url IS 'The kadasterdata.nl URL of the property.';
@@ -118,8 +112,7 @@ COMMENT ON COLUMN property_cadastral_data.value_calculated_on IS 'The date the v
 CREATE TABLE IF NOT EXISTS property_cadastral_woz (
     id SERIAL PRIMARY KEY,
     property_id INTEGER UNIQUE NOT NULL,
-    woz_url VARCHAR(1023) UNIQUE NOT NULL,
-    FOREIGN KEY (property_id) REFERENCES property(id)
+    woz_url VARCHAR(1023) UNIQUE NOT NULL
 );
 
 COMMENT ON COLUMN property_cadastral_woz.woz_url IS 'The WOZ URL of the property.';
@@ -129,10 +122,30 @@ CREATE TABLE IF NOT EXISTS property_cadastral_woz_item (
     property_cadastral_woz_id INTEGER NOT NULL,
     year INTEGER NOT NULL CHECK (year > 1800 AND year < 2100),
     reference_date DATE NOT NULL,
-    value DECIMAL(10,2) NOT NULL CHECK (value > 0),
-    FOREIGN KEY (property_cadastral_woz_id) REFERENCES property_cadastral_woz(id)
+    value DECIMAL(10,2) NOT NULL CHECK (value > 0)
 );
 
 COMMENT ON COLUMN property_cadastral_woz_item.year IS 'The year the WOZ value was calculated.';
 COMMENT ON COLUMN property_cadastral_woz_item.reference_date IS 'The reference date of the WOZ value.';
 COMMENT ON COLUMN property_cadastral_woz_item.value IS 'The WOZ value of the property.';
+
+
+ALTER TABLE property
+    ADD FOREIGN KEY (funda_data_id) REFERENCES property_funda_data(id),
+    ADD FOREIGN KEY (cadastral_data_id) REFERENCES property_cadastral_data(id),
+    ADD FOREIGN KEY (cadastral_woz_id) REFERENCES property_cadastral_woz(id);
+
+ALTER TABLE property_funda_data
+    ADD FOREIGN KEY (property_id) REFERENCES property(id);
+
+ALTER TABLE property_funda_image
+    ADD FOREIGN KEY (funda_data_id) REFERENCES property_funda_data(id);
+
+ALTER TABLE property_cadastral_data
+    ADD FOREIGN KEY (property_id) REFERENCES property(id);
+
+ALTER TABLE property_cadastral_woz
+    ADD FOREIGN KEY (property_id) REFERENCES property(id);
+
+ALTER TABLE property_cadastral_woz_item
+    ADD FOREIGN KEY (property_cadastral_woz_id) REFERENCES property_cadastral_woz(id);

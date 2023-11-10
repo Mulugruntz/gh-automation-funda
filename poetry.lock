@@ -467,6 +467,7 @@ files = [
 ]
 
 [package.dependencies]
+psycopg-c = {version = "3.1.12", optional = true, markers = "extra == \"c\""}
 typing-extensions = ">=4.1"
 tzdata = {version = "*", markers = "sys_platform == \"win32\""}
 
@@ -550,6 +551,16 @@ files = [
     {file = "psycopg_binary-3.1.12-cp39-cp39-musllinux_1_1_ppc64le.whl", hash = "sha256:03e321e149d051daa20892ed1bb3beabf0aae98a8c37da30ec80fa12306f9ba9"},
     {file = "psycopg_binary-3.1.12-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:d819cb43cccc10ba501b9d462409fcaaeb19f77b8379b2e7ca0ced4a49446d4a"},
     {file = "psycopg_binary-3.1.12-cp39-cp39-win_amd64.whl", hash = "sha256:c9eb2ba27760bc1303f0708ba95b9e4f3f3b77a081ef4f7f53375c71da3a1bee"},
+]
+
+[[package]]
+name = "psycopg-c"
+version = "3.1.12"
+description = "PostgreSQL database adapter for Python -- C optimisation distribution"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "psycopg-c-3.1.12.tar.gz", hash = "sha256:81db07874c7c530482d07155d144b287b47260dd1782a0d2d3ca7ae2d4641686"},
 ]
 
 [[package]]
@@ -1025,4 +1036,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "cffafce3a6de101ccb8ee505b0cb6d1d08917a6a9928c8e86b7da085955cf2db"
+content-hash = "22f5ab5e337fbf76bed0d8672446a54bb3199480b8a14273ff75aae87d09cf2c"
