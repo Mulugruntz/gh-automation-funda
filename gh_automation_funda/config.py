@@ -146,8 +146,8 @@ class Config(BaseSettings):
 
     postgres: PostgresConfig = Field(default_factory=PostgresConfig)
     google_sheets: list[GoogleSheetsConfig] = Field(default_factory=list)
-    dynamic_settings: dict[type[BaseModel], LazyDynamicSetting] = Field(default_factory=dict, init=False)
-    loaded_dynamic_settings: dict[type[BaseModel], list[BaseModel]] = Field(default_factory=dict, init=False)
+    dynamic_settings: dict[type[BaseModel], LazyDynamicSetting] = Field(default_factory=dict, init_var=False)
+    loaded_dynamic_settings: dict[type[BaseModel], list[BaseModel]] = Field(default_factory=dict, init_var=False)
 
     @field_serializer("loaded_dynamic_settings")
     def serialize_loaded_dynamic_settings(
