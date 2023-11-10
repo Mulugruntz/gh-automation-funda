@@ -3,6 +3,8 @@
 from asyncio import TaskGroup
 from typing import Any
 
+from tenacity import retry, stop_after_attempt, wait_random
+
 from gh_automation_funda.config import Config
 from gh_automation_funda.libs.models import (
     Property,
@@ -63,6 +65,7 @@ class Funda:
 
         return property_data
 
+    @retry(stop=stop_after_attempt(3), wait=wait_random(min=1, max=3))
     async def get_property_all_data(self, url: str) -> Property | None:
         """Get the data for a property from Funda.nl."""
         data_funda = await get_property_data(url)
