@@ -1,5 +1,9 @@
 """Logic for Funda API."""
+
+from asyncio import TaskGroup
 from typing import Any
+
+from tenacity import retry, stop_after_attempt, wait_random
 
 from gh_automation_funda.config import Config
 from gh_automation_funda.libs.models import (
@@ -31,7 +35,7 @@ class Funda:
         """Get the new properties from Funda.nl."""
         settings = await self.config.get_settings_for(FundaSetting)
         urls = set()
-        properties = []
+
         for funda_setting in settings:
             batch_urls = await get_new_properties_url(
                 area=funda_setting.area,
@@ -45,16 +49,23 @@ class Funda:
         print(f"Found {len(urls)} new properties.")
         print(" - " + "\n - ".join(urls))
 
-        for url in urls:
-            property_data = await self.get_property_all_data(url)
-            if property_data is None:
-                continue
+        async with TaskGroup() as tg:
+            tasks = [tg.create_task(self.get_property_data_and_save(url)) for url in urls]
 
-            properties.append(property_data)
-            self._save_property_data(property_data)
+        return [prop for task in tasks if (prop := task.result()) is not None]
 
-        return properties
+    async def get_property_data_and_save(self, url: str) -> Property | None:
+        """Get the data for a property from Funda.nl and save it."""
+        property_data = await self.get_property_all_data(url)
 
+        if property_data is None:
+            return None
+
+        self._save_property_data(property_data)
+
+        return property_data
+
+    @retry(stop=stop_after_attempt(3), wait=wait_random(min=1, max=3))
     async def get_property_all_data(self, url: str) -> Property | None:
         """Get the data for a property from Funda.nl."""
         data_funda = await get_property_data(url)
@@ -87,7 +98,6 @@ class Funda:
         if data_cadaster:
             cadastral_data = PropertyCadastralData(
                 cadastral_url=data_cadaster["cadastral_url"],
-                woz_url=data_woz["woz_url"],
                 value_min=data_cadaster["value_min"],
                 value_max=data_cadaster["value_max"],
                 value_calculated_on=data_cadaster["value_calculated_on"],

@@ -33,20 +33,27 @@ async def get_cadaster_url_from_address(
     data = response.json()
     properties = data.get("properties", [])
     if not properties:
-        print(f"Could not find URL for {address}")
+        print(f"Could not find cadaster URL for {address}. Property is probably too new.")
         return None
 
     url = cast(str | None, properties[0].get("url"))
 
     if not url:
-        print(f"Could not find URL for {address}")
+        print(f"Could not find cadaster URL for {address}. Property is probably too new.")
         return None
 
     return url
 
 
-async def get_property_cadaster_data(url: str) -> dict[str, Any]:
+async def get_property_cadaster_data(url: str) -> dict[str, Any] | None:
     """Get the data for a property from Kadasterdata.nl."""
+    out_when_incomplete = {
+        "cadastral_url": url,
+        "value_min": None,
+        "value_max": None,
+        "value_calculated_on": None,
+    }
+
     async with AsyncClient(follow_redirects=True) as client:
         response = await client.get(url)
 
@@ -54,7 +61,7 @@ async def get_property_cadaster_data(url: str) -> dict[str, Any]:
         response.raise_for_status()
     except Exception as e:
         print(f"Error while reading Kadasterdata.nl: {e}")
-        return {}
+        return None
 
     soup = BeautifulSoup(response.text, "html.parser")
 
@@ -62,13 +69,13 @@ async def get_property_cadaster_data(url: str) -> dict[str, Any]:
     summary_date = soup.find("div", class_="page-summary__date")
 
     if not summary_amount or not summary_date:
-        print(f"Could not find summary for {url}")
-        return {}
+        print(f"Could not find cadaster summary for {url}")
+        return out_when_incomplete
 
     values = RE_MONEY_VALUE_EURO.findall(summary_amount.text)
     if len(values) != 2:
-        print(f"Could not find value for {url}")
-        return {}
+        print(f"Could not find cadaster value for {url}")
+        return out_when_incomplete
 
     value_min, value_max = values
     value_min = int(value_min.replace(".", ""))
@@ -76,8 +83,8 @@ async def get_property_cadaster_data(url: str) -> dict[str, Any]:
 
     value_calculated_on = RE_VALUE_CALCULATED_ON.findall(summary_date.text)
     if not value_calculated_on:
-        print(f"Could not find value calculated on for {url}")
-        return {}
+        print(f"Could not find cadaster value calculated on for {url}")
+        return out_when_incomplete
 
     return {
         "cadastral_url": url,

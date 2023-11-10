@@ -16,6 +16,7 @@ python-dotenv = "^1.0.0"
 asyncpg = "^0.28.0"
 httpx = "^0.24.1"
 beautifulsoup4 = "^4.12.2"
+tenacity = "^8.2.3"
 
 [tool.poetry.scripts]
 auto = "gh_automation_funda.cli:main"
