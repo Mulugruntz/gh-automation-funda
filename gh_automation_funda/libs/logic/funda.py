@@ -87,7 +87,6 @@ class Funda:
         if data_cadaster:
             cadastral_data = PropertyCadastralData(
                 cadastral_url=data_cadaster["cadastral_url"],
-                woz_url=data_woz["woz_url"],
                 value_min=data_cadaster["value_min"],
                 value_max=data_cadaster["value_max"],
                 value_calculated_on=data_cadaster["value_calculated_on"],
