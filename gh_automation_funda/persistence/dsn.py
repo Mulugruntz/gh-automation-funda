@@ -1,6 +1,6 @@
 """DSN model and utilities."""
 
-from urllib.parse import parse_qsl, urlparse, urlencode
+from urllib.parse import parse_qsl, urlencode, urlparse
 
 from pydantic import BaseModel
 

@@ -1,8 +1,7 @@
-from gh_automation_funda.config import Config
-
-from typing import Generic, TypeVar
 from abc import ABC, abstractmethod
+from typing import Generic, TypeVar
 
+from gh_automation_funda.config import Config
 
 InputType = TypeVar("InputType")
 IntermediateType = TypeVar("IntermediateType")

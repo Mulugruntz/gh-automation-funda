@@ -1,18 +1,17 @@
 """Dynamic settings for the application."""
 
 import csv
+import json
 from io import StringIO
-from typing import TypeVar
+from typing import Annotated, TypeVar
 
 import httpx
-from pydantic import BaseModel
+from pydantic import BaseModel, BeforeValidator
 
 ModelT = TypeVar("ModelT", bound=BaseModel)
 
 
-async def read_google_sheets(
-    sheet_id: str, gid: str, model_class: type[ModelT]
-) -> list[ModelT]:
+async def read_google_sheets(sheet_id: str, gid: str, model_class: type[ModelT]) -> list[ModelT]:
     """Read a publicly available Google Sheet and return its contents as a list of Pydantic models.
 
     Params:
@@ -41,9 +40,7 @@ async def read_google_sheets(
     row: dict[str, str]
     for row in csv_reader:
         try:
-            row_instance = model_class(
-                **{k: v for k, v in row.items() if k in model_class.__annotations__}
-            )
+            row_instance = model_class(**{k: v for k, v in row.items() if k in model_class.__annotations__})
             rows.append(row_instance)
         except Exception as e:
             print(f"Skipping row {row} due to error: {e}")
@@ -56,3 +53,13 @@ class MyRow(BaseModel):
     id: int
     quote: str
     author: str
+
+
+class FundaSetting(BaseModel):
+    """A Funda setting."""
+
+    area: Annotated[list[str], BeforeValidator(json.loads), str]
+    object_type: Annotated[list[str], BeforeValidator(json.loads), str]
+    price_min: int
+    price_max: int
+    days_old: int
