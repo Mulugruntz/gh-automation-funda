@@ -39,8 +39,27 @@ class GoogleSheetsConfig(BaseSettings):
 
     @classmethod
     def create_from_env(cls) -> list[Self]:
+        """Create a list of GoogleSheetsConfig from the environment.
+
+        The environment variables should be named as follows:
+        - ``GH_AUTO_GOOGLE_SHEETS_*_SHEET_ID``: The ID of the Google Sheet.
+        - ``GH_AUTO_GOOGLE_SHEETS_*_GID``: The ID of the sheet within the Google Sheet.
+        - ``GH_AUTO_GOOGLE_SHEETS_*_MODEL``: The Pydantic model class to use for the data.
+
+        The * is a number between 1 and 10.
+
+        Note:
+            This will not check whether the remote Google Sheets are accessible nor in the correct format.
+
+        Returns:
+            A list of GoogleSheetsConfig.
+
+        Raises:
+            ValueError: If one or more models are invalid.
+        """
         env_prefix = cls.Config.env_prefix
         configs = []
+        all_models_are_valid = True
         for i in range(1, 10):  # Assuming a max of 10 configs
             sheet_id = os.environ.get(f"{env_prefix}{i}_SHEET_ID")
             gid = os.environ.get(f"{env_prefix}{i}_GID")
@@ -50,12 +69,17 @@ class GoogleSheetsConfig(BaseSettings):
                 model_class = cls.__load_model(model)
 
                 if model_class is None:
+                    all_models_are_valid = False
                     print(f"Skipping Google Sheet {sheet_id} due to invalid model {model}.")
                     continue
 
                 configs.append(cls(sheet_id=sheet_id, gid=gid, model=model_class))
             else:
                 break
+
+        if not all_models_are_valid:
+            raise ValueError("Some models are invalid.")
+
         return configs
 
     @staticmethod
