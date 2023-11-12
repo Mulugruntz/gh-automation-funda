@@ -103,8 +103,8 @@ async def get_new_properties_url(
     try:
         response.raise_for_status()
     except Exception as e:
-        print(f"Error while reading Funda.nl: {e}")
-        return []
+        e.add_note(f"Error while reading Funda.nl: {e}")
+        raise e
 
     start_tag = '<script type="application/ld+json">'
     end_tag = "</script>"
@@ -133,8 +133,8 @@ async def get_property_data(url: str) -> PropertyFromFundaData | None:
     try:
         response.raise_for_status()
     except Exception as e:
-        print(f"Error while reading Funda.nl: {e}")
-        return None
+        e.add_note(f"Error while reading Funda.nl: {e}")
+        raise e
 
     soup = BeautifulSoup(response.text, "html.parser")
 
@@ -148,7 +148,7 @@ async def get_property_data(url: str) -> PropertyFromFundaData | None:
         energy_label = _extract_energy_label(soup)
     except Exception as e:
         e.add_note(f"Error while reading {url}")
-        raise e
+        raise
 
     if energy_label is not data2["energy_label"]:
         # Known mismatch: A+ to A5+ are all seen as A in the advert data.

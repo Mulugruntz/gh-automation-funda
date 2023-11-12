@@ -27,8 +27,8 @@ async def get_cadaster_url_from_address(
     try:
         response.raise_for_status()
     except Exception as e:
-        print(f"Error while reading Kadasterdata.nl: {e}")
-        return None
+        e.add_note(f"Error while reading Kadasterdata.nl: {e}")
+        raise e
 
     data = response.json()
     properties = data.get("properties", [])
@@ -60,8 +60,8 @@ async def get_property_cadaster_data(url: str) -> dict[str, Any] | None:
     try:
         response.raise_for_status()
     except Exception as e:
-        print(f"Error while reading Kadasterdata.nl: {e}")
-        return None
+        e.add_note(f"Error while reading Kadasterdata.nl: {e}")
+        raise e
 
     soup = BeautifulSoup(response.text, "html.parser")
 

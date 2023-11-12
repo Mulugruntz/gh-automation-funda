@@ -64,8 +64,8 @@ async def get_lookup_id_from_address(*, street_and_house_number: str, postal_cod
     try:
         response.raise_for_status()
     except Exception as e:
-        print(f"Error while reading WOZwaardeloket.nl: {e}")
-        return None
+        e.add_note(f"Error while reading WOZwaardeloket.nl: {e}")
+        raise e
 
     data = response.json()
     response_obj = data.get("response", {"numFound": 0, "numFoundExact": False})
@@ -102,8 +102,8 @@ async def get_designation_id_from_lookup_id(lookup_id: str) -> str | None:
     try:
         response.raise_for_status()
     except Exception as e:
-        print(f"Error while reading WOZwaardeloket.nl: {e}")
-        return None
+        e.add_note(f"Error while reading WOZwaardeloket.nl: {e}")
+        raise e
 
     data = response.json()
     response_obj = data.get("response", {"numFound": 0, "numFoundExact": False})
@@ -137,8 +137,8 @@ async def get_woz_data(designation_id: str) -> list[dict[str, Any]]:
     try:
         response.raise_for_status()
     except Exception as e:
-        print(f"Error while reading WOZwaardeloket.nl: {e}")
-        return []
+        e.add_note(f"Error while reading WOZwaardeloket.nl: {e}")
+        raise e
 
     data = response.json()
 

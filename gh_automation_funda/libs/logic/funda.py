@@ -1,9 +1,18 @@
 """Logic for Funda API."""
 
 from asyncio import TaskGroup
-from typing import Any
+from logging import getLogger
+from typing import Any, cast
 
-from tenacity import retry, stop_after_attempt, wait_random
+from httpx import HTTPStatusError
+from tenacity import (
+    Future,
+    RetryCallState,
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_random,
+)
 
 from gh_automation_funda.config import Config
 from gh_automation_funda.libs.models import (
@@ -25,6 +34,24 @@ from gh_automation_funda.libs.scrapers.kadasterdata import (
 )
 from gh_automation_funda.libs.scrapers.wozwaardeloket import get_property_woz_data
 from gh_automation_funda.persistence.settings import FundaSetting
+
+logger = getLogger(__name__)
+
+
+def _retry_error_callback(retry_state: RetryCallState) -> None:
+    """Log the error while executing a function."""
+    formatted_args_kwargs = ", ".join(
+        [
+            ", ".join([repr(arg) for arg in retry_state.args]),
+            ", ".join([f"{key}={repr(value)}" for key, value in retry_state.kwargs.items()]),
+        ]
+    )
+    exc = cast(BaseException, cast(Future, retry_state.outcome).exception())
+    exc_info = (type(exc), exc, exc.__traceback__)
+    exc_notes = getattr(exc, "__notes__", [])
+    logger.warning("Error while executing %s(%s): %s", retry_state.fn, formatted_args_kwargs, exc, exc_info=exc_info)
+    for exc_note in exc_notes:
+        logger.warning(exc_note)
 
 
 class Funda:
@@ -65,7 +92,12 @@ class Funda:
 
         return property_data
 
-    @retry(stop=stop_after_attempt(3), wait=wait_random(min=1, max=3))
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_random(min=1, max=3),
+        retry=retry_if_exception_type(HTTPStatusError),
+        retry_error_callback=_retry_error_callback,
+    )
     async def get_property_all_data(self, url: str) -> Property | None:
         """Get the data for a property from Funda.nl."""
         data_funda = await get_property_data(url)
