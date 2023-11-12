@@ -1,11 +1,19 @@
 """Console script for GitHub Automation Base."""
 
 import asyncio
+from logging import basicConfig, getLogger
 
 import asyncpg
 import typer
 
 from gh_automation_funda.config import Config
+
+basicConfig(
+    level="INFO",
+    format="[[{asctime} {levelname:8s} {name}:{lineno:<4d}]] {message}",
+    style="{",
+)
+getLogger("httpx").setLevel("WARNING")
 
 app = typer.Typer()
 

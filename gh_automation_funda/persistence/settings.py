@@ -3,10 +3,13 @@
 import csv
 import json
 from io import StringIO
+from logging import getLogger
 from typing import Annotated, TypeVar
 
 import httpx
 from pydantic import BaseModel, BeforeValidator
+
+logger = getLogger(__name__)
 
 ModelT = TypeVar("ModelT", bound=BaseModel)
 
@@ -34,7 +37,7 @@ async def read_google_sheets(sheet_id: str, gid: str, model_class: type[ModelT])
     try:
         response.raise_for_status()
     except httpx.HTTPStatusError as e:
-        print(f"Error while reading Google Sheet: {e}")
+        logger.error(f"Error while reading Google Sheet: {e}")
         return rows
 
     csv_data = StringIO(response.text)
@@ -49,7 +52,7 @@ async def read_google_sheets(sheet_id: str, gid: str, model_class: type[ModelT])
             rows.append(row_instance)
         except Exception as e:
             all_rows_are_valid = False
-            print(f"Skipping row {row} due to error: {e}")
+            logger.error(f"Skipping row {row} due to error: {e}")
 
     if not all_rows_are_valid:
         raise ValueError("Some rows are invalid.")

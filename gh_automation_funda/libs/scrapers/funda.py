@@ -8,9 +8,9 @@ import warnings
 from datetime import date, datetime
 from decimal import Decimal
 from html import unescape
-from typing import Any, Final, TypedDict
+from typing import Any, Final, TypedDict, cast
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from httpx import AsyncClient
 
 from gh_automation_funda.libs.models import (
@@ -103,8 +103,8 @@ async def get_new_properties_url(
     try:
         response.raise_for_status()
     except Exception as e:
-        print(f"Error while reading Funda.nl: {e}")
-        return []
+        e.add_note(f"Error while reading Funda.nl: {e}")
+        raise e
 
     start_tag = '<script type="application/ld+json">'
     end_tag = "</script>"
@@ -133,8 +133,8 @@ async def get_property_data(url: str) -> PropertyFromFundaData | None:
     try:
         response.raise_for_status()
     except Exception as e:
-        print(f"Error while reading Funda.nl: {e}")
-        return None
+        e.add_note(f"Error while reading Funda.nl: {e}")
+        raise e
 
     soup = BeautifulSoup(response.text, "html.parser")
 
@@ -148,7 +148,7 @@ async def get_property_data(url: str) -> PropertyFromFundaData | None:
         energy_label = _extract_energy_label(soup)
     except Exception as e:
         e.add_note(f"Error while reading {url}")
-        raise e
+        raise
 
     if energy_label is not data2["energy_label"]:
         # Known mismatch: A+ to A5+ are all seen as A in the advert data.
@@ -285,11 +285,37 @@ def _extract_areas_and_volume(soup: BeautifulSoup) -> dict[str, Any]:
 
 
 def _extract_energy_label(soup: BeautifulSoup) -> EnergyLabel:
-    energy_label_tag = soup.find("span", class_="energielabel")
+    """Extract the energy label from the page.
+
+    The tag looks like this:
+
+    .. code-block:: html
+
+        <span class="energielabel energielabel-c" title="Energielabel C">C</span>
+
+
+    Or sometimes like this:
+
+    .. code-block:: html
+
+        <span class="energielabel energielabel-c" title="Energielabel C">C
+            <span class="energielabel-index" title="Energie-Indexcijfer 1,84">1,84</span>
+        </span>
+    """
+    energy_label_tag = cast(Tag, soup.find("span", class_="energielabel"))
     if not energy_label_tag:
         return EnergyLabel.UNKNOWN
 
-    text = energy_label_tag.text.strip()
+    # Get the title, check if it starts with "Energielabel" and strip it.
+    energy_label_title = energy_label_tag.attrs["title"]
+    if energy_label_title.startswith("Energielabel "):
+        energy_label_from_title = EnergyLabel(energy_label_title.removeprefix("Energielabel ").strip())
+        text = energy_label_tag.contents[0].get_text(strip=True)
+        if energy_label_from_title.upper() != text.upper():
+            warnings.warn(f"Energy label mismatch: title={energy_label_from_title} vs body={text}", UserWarning)
+    else:
+        text = energy_label_tag.get_text(strip=True)
+
     try:
         return EnergyLabel(text)
     except ValueError:
@@ -299,7 +325,7 @@ def _extract_energy_label(soup: BeautifulSoup) -> EnergyLabel:
 
 
 async def main() -> None:
-    """Main entry point."""
+    """Main entry point (for testing)."""
     urls = await get_new_properties_url(area=["almere"], price_min=300_000, price_max=500_000, object_type=["house"])
     print(urls)
     for url in urls:

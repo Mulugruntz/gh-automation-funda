@@ -1,9 +1,18 @@
 """Logic for Funda API."""
 
 from asyncio import TaskGroup
-from typing import Any
+from logging import getLogger
+from typing import Any, cast
 
-from tenacity import retry, stop_after_attempt, wait_random
+from httpx import HTTPStatusError
+from tenacity import (
+    Future,
+    RetryCallState,
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_random,
+)
 
 from gh_automation_funda.config import Config
 from gh_automation_funda.libs.models import (
@@ -26,6 +35,24 @@ from gh_automation_funda.libs.scrapers.kadasterdata import (
 from gh_automation_funda.libs.scrapers.wozwaardeloket import get_property_woz_data
 from gh_automation_funda.persistence.settings import FundaSetting
 
+logger = getLogger(__name__)
+
+
+def _retry_error_callback(retry_state: RetryCallState) -> None:
+    """Log the error while executing a function."""
+    formatted_args_kwargs = ", ".join(
+        [
+            ", ".join([repr(arg) for arg in retry_state.args]),
+            ", ".join([f"{key}={repr(value)}" for key, value in retry_state.kwargs.items()]),
+        ]
+    )
+    exc = cast(BaseException, cast(Future, retry_state.outcome).exception())
+    exc_info = (type(exc), exc, exc.__traceback__)
+    exc_notes = getattr(exc, "__notes__", [])
+    logger.warning("Error while executing %s(%s): %s", retry_state.fn, formatted_args_kwargs, exc, exc_info=exc_info)
+    for exc_note in exc_notes:
+        logger.warning(exc_note)
+
 
 class Funda:
     def __init__(self, config: Config) -> None:
@@ -46,8 +73,9 @@ class Funda:
             )
             urls.update(batch_urls)
 
-        print(f"Found {len(urls)} new properties.")
-        print(" - " + "\n - ".join(urls))
+        logger.info(f"Found {len(urls)} new properties.")
+        for url in urls:
+            logger.info(f" - {url}")
 
         async with TaskGroup() as tg:
             tasks = [tg.create_task(self.get_property_data_and_save(url)) for url in urls]
@@ -65,7 +93,12 @@ class Funda:
 
         return property_data
 
-    @retry(stop=stop_after_attempt(3), wait=wait_random(min=1, max=3))
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_random(min=1, max=3),
+        retry=retry_if_exception_type(HTTPStatusError),
+        retry_error_callback=_retry_error_callback,
+    )
     async def get_property_all_data(self, url: str) -> Property | None:
         """Get the data for a property from Funda.nl."""
         data_funda = await get_property_data(url)
@@ -152,12 +185,11 @@ class Funda:
 
     def _save_property_data(self, property_data: Property) -> None:
         """Save the property data."""
-        print("Saving property data:")
-        # print(property_data.model_dump_json(indent=2))
-        print(property_data.address)
-        print(property_data.funda_data.url)
+        logger.info("Saving property data:")
+        # logger.info(property_data.model_dump_json(indent=2))
+        logger.info(property_data.address)
+        logger.info(property_data.funda_data.url)
         if property_data.cadastral_data is not None:
-            print(property_data.cadastral_data.cadastral_url)
-        print(property_data.cadastral_woz.woz_url)
-        print("Done saving property data.")
-        print()
+            logger.info(property_data.cadastral_data.cadastral_url)
+        logger.info(property_data.cadastral_woz.woz_url)
+        logger.info("Done saving property data.")

@@ -2,6 +2,7 @@
 import asyncio
 import os
 from importlib import import_module
+from logging import getLogger
 from typing import Annotated, Any, Literal, Self, TypeVar, cast
 
 from dotenv import load_dotenv
@@ -15,6 +16,9 @@ from pydantic import (
 from pydantic_settings import BaseSettings
 
 from gh_automation_funda.persistence.settings import read_google_sheets
+
+logger = getLogger(__name__)
+
 
 ENV_PREFIX = "GH_AUTO_"
 SSLMode = Literal["require", "verify-ca", "verify-full", "prefer", "allow", "disable"]
@@ -70,7 +74,7 @@ class GoogleSheetsConfig(BaseSettings):
 
                 if model_class is None:
                     all_models_are_valid = False
-                    print(f"Skipping Google Sheet {sheet_id} due to invalid model {model}.")
+                    logger.warning(f"Skipping Google Sheet {sheet_id} due to invalid model {model}.")
                     continue
 
                 configs.append(cls(sheet_id=sheet_id, gid=gid, model=model_class))
@@ -94,7 +98,7 @@ class GoogleSheetsConfig(BaseSettings):
                 raise AttributeError(f"Model {model} is not a subclass of Pydantic's BaseModel.")
 
         except (ImportError, AttributeError) as e:
-            print(f"Cannot import model {model} due to error: {e}")
+            logger.error(f"Cannot import model {model} due to error: {e}")
             return None
 
         return cast(type[BaseModel], model_class)
