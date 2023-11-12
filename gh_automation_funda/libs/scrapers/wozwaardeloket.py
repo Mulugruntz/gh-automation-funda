@@ -1,6 +1,7 @@
 """Scrapers for WOZwaardeloket.nl."""
 
 import asyncio
+import warnings
 from datetime import datetime
 from typing import Any, cast
 
@@ -78,8 +79,11 @@ async def get_lookup_id_from_address(*, street_and_house_number: str, postal_cod
 
     first_result = response_obj["docs"][0]
 
+    if first_result["type"] == "postcode":
+        first_result = next((result for result in response_obj["docs"] if result["type"] == "adres"), {"type": ""})
+
     if first_result["type"] != "adres":
-        print(f"Found non-address result for {address}: {first_result['type']}")
+        warnings.warn(f"Could not find address type for {address}: {first_result['type']}", UserWarning)
 
     return cast(str, first_result["id"])
 
