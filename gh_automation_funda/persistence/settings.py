@@ -21,6 +21,9 @@ async def read_google_sheets(sheet_id: str, gid: str, model_class: type[ModelT])
 
     Returns:
         A list of Pydantic models representing each row in the Google Sheet.
+
+    Raises:
+        ValueError: If one or more rows are invalid.
     """
     url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&gid={gid}"
     rows: list[ModelT] = []
@@ -38,21 +41,23 @@ async def read_google_sheets(sheet_id: str, gid: str, model_class: type[ModelT])
     csv_reader = csv.DictReader(csv_data)
 
     row: dict[str, str]
+    all_rows_are_valid = True
+
     for row in csv_reader:
         try:
             row_instance = model_class(**{k: v for k, v in row.items() if k in model_class.__annotations__})
             rows.append(row_instance)
         except Exception as e:
+            all_rows_are_valid = False
             print(f"Skipping row {row} due to error: {e}")
+
+    if not all_rows_are_valid:
+        raise ValueError("Some rows are invalid.")
 
     return rows
 
 
 # Define your Pydantic models based on the known structure of the Google Sheet.
-class MyRow(BaseModel):
-    id: int
-    quote: str
-    author: str
 
 
 class FundaSetting(BaseModel):
