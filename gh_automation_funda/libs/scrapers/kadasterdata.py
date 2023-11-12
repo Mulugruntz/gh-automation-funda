@@ -3,10 +3,13 @@
 import asyncio
 import re
 from datetime import datetime
+from logging import getLogger
 from typing import Any, Final, cast
 
 from bs4 import BeautifulSoup
 from httpx import AsyncClient
+
+logger = getLogger(__name__)
 
 URL_KADASTERDATA: Final[str] = "https://www.kadasterdata.nl"
 URL_KADASTERDATA_SEARCH: Final[str] = f"{URL_KADASTERDATA}/api-hd/autocomplete"
@@ -33,13 +36,13 @@ async def get_cadaster_url_from_address(
     data = response.json()
     properties = data.get("properties", [])
     if not properties:
-        print(f"Could not find cadaster URL for {address}. Property is probably too new.")
+        logger.warning(f"Could not find cadaster URL for {address}. Property is probably too new.")
         return None
 
     url = cast(str | None, properties[0].get("url"))
 
     if not url:
-        print(f"Could not find cadaster URL for {address}. Property is probably too new.")
+        logger.warning(f"Could not find cadaster URL for {address}. Property is probably too new.")
         return None
 
     return url
@@ -69,12 +72,12 @@ async def get_property_cadaster_data(url: str) -> dict[str, Any] | None:
     summary_date = soup.find("div", class_="page-summary__date")
 
     if not summary_amount or not summary_date:
-        print(f"Could not find cadaster summary for {url}")
+        logger.warning(f"Could not find cadaster summary for {url}")
         return out_when_incomplete
 
     values = RE_MONEY_VALUE_EURO.findall(summary_amount.text)
     if len(values) != 2:
-        print(f"Could not find cadaster value for {url}")
+        logger.warning(f"Could not find cadaster value for {url}")
         return out_when_incomplete
 
     value_min, value_max = values
@@ -83,7 +86,7 @@ async def get_property_cadaster_data(url: str) -> dict[str, Any] | None:
 
     value_calculated_on = RE_VALUE_CALCULATED_ON.findall(summary_date.text)
     if not value_calculated_on:
-        print(f"Could not find cadaster value calculated on for {url}")
+        logger.warning(f"Could not find cadaster value calculated on for {url}")
         return out_when_incomplete
 
     return {
@@ -95,7 +98,7 @@ async def get_property_cadaster_data(url: str) -> dict[str, Any] | None:
 
 
 async def main() -> None:
-    """Run the main function."""
+    """Run the main function (for testing)."""
     # Kerkstraat 1, 1234AB Amsterdam
     url = await get_cadaster_url_from_address(
         street_and_house_number="Kerkstraat 1", postal_code="1234AB", city="Amsterdam"

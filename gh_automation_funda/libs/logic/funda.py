@@ -73,8 +73,9 @@ class Funda:
             )
             urls.update(batch_urls)
 
-        print(f"Found {len(urls)} new properties.")
-        print(" - " + "\n - ".join(urls))
+        logger.info(f"Found {len(urls)} new properties.")
+        for url in urls:
+            logger.info(f" - {url}")
 
         async with TaskGroup() as tg:
             tasks = [tg.create_task(self.get_property_data_and_save(url)) for url in urls]
@@ -184,12 +185,11 @@ class Funda:
 
     def _save_property_data(self, property_data: Property) -> None:
         """Save the property data."""
-        print("Saving property data:")
-        # print(property_data.model_dump_json(indent=2))
-        print(property_data.address)
-        print(property_data.funda_data.url)
+        logger.info("Saving property data:")
+        # logger.info(property_data.model_dump_json(indent=2))
+        logger.info(property_data.address)
+        logger.info(property_data.funda_data.url)
         if property_data.cadastral_data is not None:
-            print(property_data.cadastral_data.cadastral_url)
-        print(property_data.cadastral_woz.woz_url)
-        print("Done saving property data.")
-        print()
+            logger.info(property_data.cadastral_data.cadastral_url)
+        logger.info(property_data.cadastral_woz.woz_url)
+        logger.info("Done saving property data.")

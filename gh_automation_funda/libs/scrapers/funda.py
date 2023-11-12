@@ -325,7 +325,7 @@ def _extract_energy_label(soup: BeautifulSoup) -> EnergyLabel:
 
 
 async def main() -> None:
-    """Main entry point."""
+    """Main entry point (for testing)."""
     urls = await get_new_properties_url(area=["almere"], price_min=300_000, price_max=500_000, object_type=["house"])
     print(urls)
     for url in urls:
